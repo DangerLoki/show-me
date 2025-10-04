@@ -1,0 +1,39 @@
+{
+  "key.categories.showme": "Show Me",
+  "key.showme.toggle": "Toggle HUD visibility",
+  "key.showme.open_menu": "Open configuration menu",
+
+  "key.on": "On",
+  "key.off": "Off",
+
+  "key.save": "Save",
+  "key.cancel": "Cancel",
+
+  "key.category.world": "World",
+  "key.category.multiplayer": "Multiplayer",
+  "key.category.system": "System",
+  "key.category.diagnosis": "Diagnostics",
+
+  "key.option.showFps": "FPS",
+  "key.option.showCoordinates": "Coordinates",
+  "key.option.showBrightness": "Brightness",
+  "key.option.showDays": "Day",
+  "key.option.showBiome": "Biome",
+  "key.option.showDebug": "Debug info",
+  "key.option.showPing": "Ping",
+  "key.option.showMemory": "Memory",
+  "key.option.showClock": "Clock",
+  "key.option.showSeed": "Seed",
+
+  "key.hud.visible": "Visible",
+  "key.hud.hidden": "Hidden",
+
+  "key.hud.day": "Day: %d",
+  "key.hud.biome": "Biome: %s",
+  "key.hud.unknownBiome": "Unknown",
+  "key.hud.brightness": "Light (Block/Sky): %d / %d",
+  "key.hud.ping": "Ping: %s ms",
+  "key.hud.memory": "Mem: %d / %d MB (%d%%)",
+  "key.hud.time": "Time: ",
+  "key.hud.seed": "Seed: %s"
+}

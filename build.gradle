@@ -1,0 +1,159 @@
+plugins {
+	id 'fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+	id 'eclipse'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	mavenCentral()
+	maven { url = 'https://maven.fabricmc.net/' }
+	maven { url = 'https://maven.terraformersmc.com/' }
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"show-me" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+dependencies {
+	// Para alterar as versões, veja o arquivo gradle.properties
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API. Isso é tecnicamente opcional, mas provavelmente você vai querer usá-lo.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Tests
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+	// Corrigir a versão do Java para 17, necessária para Minecraft 1.17+
+	it.options.release = 17
+}
+
+java {
+	// Loom irá automaticamente anexar sourcesJar a uma tarefa RemapSourcesJar e à tarefa "build"
+	// se estiver presente.
+	// Se você remover esta linha, as fontes não serão geradas.
+	withSourcesJar()
+
+	// Corrigir compatibilidade do Java para 17
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+	inputs.property "archivesName", project.base.archivesName
+
+	from("LICENSE") {
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+}
+
+// Configurar a publicação Maven
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+
+	// Veja https://docs.gradle.org/current/userguide/publishing_maven.html para informações sobre como configurar a publicação.
+	repositories {
+		// Adicione repositórios para publicar aqui.
+		// Aviso: Este bloco NÃO tem a mesma função que o bloco no nível superior.
+		// Os repositórios aqui serão usados para publicar seu artefato, não para
+		// recuperar dependências.
+	}
+}
+/*
+task compileNative(type: Exec) {
+	description = "Compile native code (C++) before the Java Build"
+	group = "native"
+
+	def outputDir = "${projectDir}/src/main/resources/natives"
+	def includeDir = "${projectDir}/native/include"
+	def libDir = "${projectDir}/native/lib/linux"
+	def sourceFiles = fileTree("${projectDir}/native") {
+		include '*.cpp'
+	}
+
+	doFirst {
+		file(outputDir).mkdirs()
+	}
+
+	commandLine "g++",
+								"-shared",
+								"-static-libgcc",
+								"-static-libstdc++",
+								"-fPIC",
+								"-std=c++11",
+								"-I${System.getenv("JAVA_HOME")}/include",
+								"-I${System.getenv("JAVA_HOME")}/include/linux",
+								"-I${includeDir}",
+								*sourceFiles.files.toList(),
+								"-L${libDir}",
+								"-lOpenCL",
+								"-o", "${outputDir}/libgpu_monitor.so"
+}
+
+task compileNativeWindows(type: Exec) {
+    description = "Compile native code (C++) for Windows"
+    group = "native"
+
+    def outputDir = "${projectDir}/src/main/resources/natives"
+    def includeDir = "${projectDir}/native/include/windows"
+    def libDir = "${projectDir}/native/lib"
+    def sourceFiles = fileTree("${projectDir}/native") {
+        include '*.cpp'
+    }
+
+    doFirst {
+        file(outputDir).mkdirs()
+    }
+
+    commandLine "g++",
+                                "-shared",
+                                "-m64",
+                                "-std=c++11",
+                                "-static-libgcc",
+                                "-static-libstdc++",
+                                "-I${System.getenv("JAVA_HOME")}/include",
+                                "-I${System.getenv("JAVA_HOME")}/include/win32",
+                                "-I${includeDir}",
+                                *sourceFiles.files.toList(),
+                                "-L${libDir}",
+                                "-lOpenCL",
+                                "-Wl,-Bstatic",
+                                "-Wl,-Bdynamic",
+                                "-o", "${outputDir}/gpu_monitor.dll"
+}
+*/

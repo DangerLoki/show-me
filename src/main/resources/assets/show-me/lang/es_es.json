@@ -1,0 +1,39 @@
+{
+  "key.categories.showme": "Show Me",
+  "key.showme.toggle": "Alternar visibilidad del HUD",
+  "key.showme.open_menu": "Abrir menú de configuración",
+
+  "key.on": "Activado",
+  "key.off": "Desactivado",
+
+  "key.save": "Guardar",
+  "key.cancel": "Cancelar",
+
+  "key.category.world": "Mundo",
+  "key.category.multiplayer": "Multijugador",
+  "key.category.system": "Sistema",
+  "key.category.diagnosis": "Diagnóstico",
+
+  "key.option.showFps": "FPS",
+  "key.option.showCoordinates": "Coordenadas",
+  "key.option.showBrightness": "Brillo",
+  "key.option.showDays": "Día",
+  "key.option.showBiome": "Bioma",
+  "key.option.showDebug": "Información de depuración",
+  "key.option.showPing": "Ping",
+  "key.option.showMemory": "Memoria",
+  "key.option.showClock": "Reloj",
+  "key.option.showSeed": "Semilla",
+
+  "key.hud.visible": "Visible",
+  "key.hud.hidden": "Oculto",
+
+  "key.hud.day": "Día: %d",
+  "key.hud.biome": "Bioma: %s",
+  "key.hud.unknownBiome": "Desconocido",
+  "key.hud.brightness": "Luz (Bloque/Cielo): %d / %d",
+  "key.hud.ping": "Ping: %s ms",
+  "key.hud.memory": "Mem: %d / %d MB (%d%%)",
+  "key.hud.time": "Hora: ",
+  "key.hud.seed": "Semilla: %s"
+}

@@ -1,0 +1,292 @@
+// ShowMeConfigScreen.java
+package com.meioQuilo.showme;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.text.Text;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ShowMeConfigScreen extends Screen {
+    private final Screen parent;
+
+    private boolean showFps;
+    private boolean showCoords;
+    private boolean showBrightness;
+
+    // === estado do menu ===
+    private boolean menuOpen = false;
+    private int menuX, menuY, menuW = 160, itemH = 18, padding = 6;
+
+    // submenu
+    private boolean subOpen = false;
+    private int subX, subY, subW = 170;
+
+    // definição dos itens do menu
+    private final List<MenuItem> rootItems = new ArrayList<>();
+    private final List<MenuItem> subItems = new ArrayList<>();
+
+    // para hover
+    private int hoveredIndex = -1;
+    private int hoveredSubIndex = -1;
+
+    protected ShowMeConfigScreen(Screen parent) {
+        super(Text.literal("Show Me - Configurações"));
+        this.parent = parent;
+    }
+
+    @Override
+    protected void init() {
+        // valores atuais
+        this.showFps = ShowMeClient.CONFIG.showFps;
+        this.showCoords = ShowMeClient.CONFIG.showCoords;
+        this.showBrightness = ShowMeClient.CONFIG.showBrightness;
+
+        int centerX = this.width / 2;
+        int y = 60;
+
+        // botões normais (exemplo)
+        addDrawableChild(ButtonWidget.builder(
+                Text.literal(label("Mostrar FPS", showFps)),
+                b -> { showFps = !showFps; b.setMessage(Text.literal(label("Mostrar FPS", showFps))); }
+        ).dimensions(centerX - 100, y, 200, 20).build());
+        y += 24;
+
+        addDrawableChild(ButtonWidget.builder(
+                Text.literal(label("Mostrar Coordenadas", showCoords)),
+                b -> { showCoords = !showCoords; b.setMessage(Text.literal(label("Mostrar Coordenadas", showCoords))); }
+        ).dimensions(centerX - 100, y, 200, 20).build());
+        y += 24;
+
+        addDrawableChild(ButtonWidget.builder(
+                Text.literal(label("Mostrar Brilho", showBrightness)),
+                b -> { showBrightness = !showBrightness; b.setMessage(Text.literal(label("Mostrar Brilho", showBrightness))); }
+        ).dimensions(centerX - 100, y, 200, 20).build());
+        y += 28;
+
+        // === botão que abre o MENU DROPDOWN ===
+        addDrawableChild(ButtonWidget.builder(
+                Text.literal("Menu ▾"),
+                b -> toggleMenu(b.getX(), b.getY() + b.getHeight())
+        ).dimensions(centerX - 100, y, 95, 20).build());
+
+        // salvar/cancelar
+        addDrawableChild(ButtonWidget.builder(Text.literal("Salvar"), b -> {
+            ShowMeClient.CONFIG.showFps = showFps;
+            ShowMeClient.CONFIG.showCoords = showCoords;
+            ShowMeClient.CONFIG.showBrightness = showBrightness;
+            ShowMeConfig.save(ShowMeClient.CONFIG);
+            close();
+        }).dimensions(centerX + 5, y, 95, 20).build());
+
+        // construir itens do menu uma vez
+        buildMenuItems();
+    }
+
+    private void buildMenuItems() {
+        rootItems.clear();
+        subItems.clear();
+
+        // itens do menu principal
+        rootItems.add(new MenuItem("HUD: " + (showFps || showCoords ? "Custom" : "Básico"), () -> {
+            // exemplo de ação: alternar ambos rapidamente
+            showFps = !showFps;
+            showCoords = !showCoords;
+            closeMenus();
+            this.init(); // refaz labels
+        }));
+
+        // item com submenu
+        rootItems.add(new MenuItem("Avançado ▸", null, true)); // hasSub = true
+
+        // outros itens diretos
+        rootItems.add(new MenuItem("Resetar para padrão", () -> {
+            showFps = true;
+            showCoords = true;
+            showBrightness = false;
+            closeMenus();
+            this.init();
+        }));
+
+        // conteúdo do SUBMENU (para o item "Avançado ▸")
+        subItems.add(new MenuItem((showBrightness ? "Desligar" : "Ligar") + " Brilho", () -> {
+            showBrightness = !showBrightness;
+            closeMenus();
+            this.init();
+        }));
+        subItems.add(new MenuItem((showFps ? "Ocultar" : "Mostrar") + " FPS", () -> {
+            showFps = !showFps;
+            closeMenus();
+            this.init();
+        }));
+        subItems.add(new MenuItem((showCoords ? "Ocultar" : "Mostrar") + " Coordenadas", () -> {
+            showCoords = !showCoords;
+            closeMenus();
+            this.init();
+        }));
+    }
+
+    private void toggleMenu(int baseX, int baseY) {
+        if (menuOpen) {
+            closeMenus();
+        } else {
+            menuOpen = true;
+            hoveredIndex = hoveredSubIndex = -1;
+            menuX = baseX;           // alinha com o botão
+            menuY = baseY + 2;       // logo abaixo
+            subOpen = false;
+        }
+    }
+
+    private void openSubmenu() {
+        subOpen = true;
+        hoveredSubIndex = -1;
+        subX = menuX + menuW + 2; // abre à direita do menu
+        subY = menuY + itemH + 2; // tenta alinhar à altura do item "Avançado ▸"
+        // Ajuste caso passe da tela
+        if (subX + subW > this.width) subX = menuX - subW - 2;
+    }
+
+    private void closeMenus() {
+        subOpen = false;
+        menuOpen = false;
+        hoveredIndex = hoveredSubIndex = -1;
+    }
+
+    private String label(String base, boolean v) { return base + ": " + (v ? "Ligado" : "Desligado"); }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // ESC fecha menus
+        if (menuOpen && keyCode == 256) { // GLFW_KEY_ESCAPE = 256
+            closeMenus();
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (menuOpen) {
+            // clique dentro do menu principal?
+            if (inside(mouseX, mouseY, menuX, menuY, menuW, itemH * rootItems.size() + padding)) {
+                int idx = (int)((mouseY - menuY - padding/2) / itemH);
+                if (idx >= 0 && idx < rootItems.size()) {
+                    MenuItem item = rootItems.get(idx);
+                    if (item.hasSub) {
+                        openSubmenu();
+                    } else if (item.action != null) {
+                        item.action.run();
+                    }
+                    return true;
+                }
+            }
+            // clique dentro do submenu?
+            if (subOpen && inside(mouseX, mouseY, subX, subY, subW, itemH * subItems.size() + padding)) {
+                int idx = (int)((mouseY - subY - padding/2) / itemH);
+                if (idx >= 0 && idx < subItems.size()) {
+                    MenuItem item = subItems.get(idx);
+                    if (item.action != null) item.action.run();
+                    return true;
+                }
+            }
+            // clique fora fecha menus
+            closeMenus();
+            // não retorna ainda: deixa outros widgets receberem o clique
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+        // fundo
+        ctx.fill(0, 0, this.width, this.height, 0x88000000);
+        ctx.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 20, 0xFFFFFF);
+
+        super.render(ctx, mouseX, mouseY, delta);
+
+        // desenhar menus por cima dos widgets
+        if (menuOpen) {
+            // calcula hover
+            hoveredIndex = -1;
+            int totalH = itemH * rootItems.size() + padding;
+            drawMenuBox(ctx, menuX, menuY, menuW, totalH);
+            int y = menuY + padding/2;
+            for (int i = 0; i < rootItems.size(); i++) {
+                boolean over = inside(mouseX, mouseY, menuX, y, menuW, itemH);
+                if (over) hoveredIndex = i;
+                drawMenuItem(ctx, menuX, y, menuW, itemH, rootItems.get(i).label, over, rootItems.get(i).hasSub);
+                y += itemH;
+            }
+
+            // abrir submenu automaticamente ao passar o mouse no item "Avançado ▸"
+            if (hoveredIndex == 1 && rootItems.get(1).hasSub) {
+                // posiciona submenu preso na altura do item 1
+                subX = menuX + menuW + 2;
+                subY = menuY + padding/2 + itemH * 1; // mesmo offset do item 1
+                if (!subOpen) subOpen = true;
+            } else if (!inside(mouseX, mouseY, subX, subY, subW, itemH * subItems.size() + padding)) {
+                // se o mouse não está sobre o submenu e não está no item pai, fecha submenu
+                if (subOpen && hoveredIndex != 1) subOpen = false;
+            }
+
+            if (subOpen) {
+                hoveredSubIndex = -1;
+                int sh = itemH * subItems.size() + padding;
+                drawMenuBox(ctx, subX, subY, subW, sh);
+                int sy = subY + padding/2;
+                for (int i = 0; i < subItems.size(); i++) {
+                    boolean over = inside(mouseX, mouseY, subX, sy, subW, itemH);
+                    if (over) hoveredSubIndex = i;
+                    drawMenuItem(ctx, subX, sy, subW, itemH, subItems.get(i).label, over, false);
+                    sy += itemH;
+                }
+            }
+        }
+    }
+
+    private void drawMenuBox(DrawContext ctx, int x, int y, int w, int h) {
+        // borda + fundo
+        ctx.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xCC000000);
+        ctx.fill(x, y, x + w, y + h, 0xF0161616);
+    }
+
+    private void drawMenuItem(DrawContext ctx, int x, int y, int w, int h, String text, boolean hover, boolean hasSub) {
+        int bg = hover ? 0xFF2A2A2A : 0x00000000;
+        if (hover) ctx.fill(x + 2, y, x + w - 2, y + h, bg);
+        int tx = x + 8;
+        int ty = y + (h - 8) / 2; // alinhado verticalmente
+        ctx.drawTextWithShadow(this.textRenderer, text, tx, ty, 0xFFFFFF);
+
+        if (hasSub) {
+            String arrow = "▸";
+            int aw = this.textRenderer.getWidth(arrow);
+            ctx.drawTextWithShadow(this.textRenderer, arrow, x + w - aw - 8, ty, 0xBBBBBB);
+        }
+    }
+
+    private boolean inside(double mx, double my, int x, int y, int w, int h) {
+        return mx >= x && mx <= x + w && my >= y && my <= y + h;
+    }
+
+    @Override
+    public void close() {
+        MinecraftClient.getInstance().setScreen(parent);
+    }
+
+    // ======= MenuItem simples =======
+    private static class MenuItem {
+        final String label;
+        final Runnable action; // null se for apenas um "ramo" com submenu
+        final boolean hasSub;
+        MenuItem(String label, Runnable action) { this(label, action, false); }
+        MenuItem(String label, Runnable action, boolean hasSub) {
+            this.label = label;
+            this.action = action;
+            this.hasSub = hasSub;
+        }
+    }
+}

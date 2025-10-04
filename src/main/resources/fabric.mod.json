@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "show-me",
+	"version": "${version}",
+	"name": "Show Me",
+	"description": "Mostra no HUD apenas as informações que você quiser (coords, ping, FPS, etc.) sem precisar do F3.",
+	"authors": [
+		"Danger_Loki, RaijinBr"
+	],
+	"contact": {
+		"homepage": "https://github.com/DangerLoki/mod-mine-show-me",
+		"sources": "https://github.com/DangerLoki/mod-mine-show-me"
+	},
+	"license": "MIT",
+	"icon": "assets/show-me/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.meioQuilo.showme.ShowMeClient"
+		]
+	},
+	"mixins": [
+		"showme.mixins.json",
+		{
+			"config": "showme.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": ">=1.21.6 <=1.21.8",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

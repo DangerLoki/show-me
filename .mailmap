@@ -1,0 +1,12 @@
+# Map incorrect email attributions to correct authors
+# This prevents AndreMicaelSilva from appearing as a contributor
+# when commits were made with Danger_Loki or RaijinD's name but wrong email
+
+# Danger_Loki (DangerLoki on GitHub)
+Danger_Loki <danger.loki@example.com> AndreMicaelSilva <*>
+Danger_Loki <danger.loki@example.com> Danger_Loki <*@*>
+
+# RaijinBr / RaijinD
+RaijinD <edecarlosa.16@gmail.com> RaijinD <*>
+RaijinD <edecarlosa.16@gmail.com> RaijinBr <*>
+RaijinD <edecarlosa.16@gmail.com> AndreMicaelSilva <*>
