@@ -2,7 +2,6 @@ package com.meioQuilo.showme;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.meioQuilo.showme.components.ButtonScheema.LabeledEnum;
 
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -40,7 +39,7 @@ public class ShowMeConfig {
     public boolean showTime = false;
     public boolean showBrightness = false;
     public boolean showDays = false;
-    // public boolean showDebug = false;
+    public boolean showDebug = false;
     public boolean showMemory = false;
     public boolean showClock = false;
     public boolean showSeed = false;
@@ -59,6 +58,7 @@ public class ShowMeConfig {
     }
 
     public static void save(ShowMeConfig config) {
+        // Implementação básica para salvar configuração
         try {
             String json = GSON.toJson(config);
             Files.createDirectories(CONFIG_PATH.getParent());

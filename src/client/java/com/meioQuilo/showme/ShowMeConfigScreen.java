@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,10 +84,13 @@ public class ShowMeConfigScreen extends Screen {
         system.addOption("key.option.showFps", () -> cfg.showFps, v -> cfg.showFps = v);
         system.addOption("key.option.showMemory", () -> cfg.showMemory, v -> cfg.showMemory = v);
 
+        Section debug = new Section("key.category.diagnosis");
+        debug.addOption("key.option.showDebug", () -> cfg.showDebug, v -> cfg.showDebug = v);
+
         sections.add(world);
         sections.add(net);
         sections.add(system);
-        //sections.add(debug);
+        sections.add(debug);
     }
 
     private void rebuildWidgets() {
@@ -121,10 +125,16 @@ public class ShowMeConfigScreen extends Screen {
                             draft.useCustomHudPos = true;
                         }
                         b.setMessage(Text.literal(moveIcon()));
+                        rebuildWidgets(); // Reconstrói para adicionar/remover widget de drag
                     })
                     .dimensions(moveBtnX, topBtnY, topBtnSize, topBtnSize)
                     .build()
         );
+
+        // Widget invisível para arrastar o HUD (apenas quando moveHudMode está ativo)
+        if (moveHudMode) {
+            // Não precisamos de widget - o mouseClicked do Screen trata
+        }
 
         int headerH = 20;
         int lineGap = 6;
@@ -260,11 +270,51 @@ public class ShowMeConfigScreen extends Screen {
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
-    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // NOTA: Este método não é chamado no Minecraft 1.21.9 devido a mudanças na API.
+        // A detecção de cliques foi movida para o método render() usando GLFW diretamente.
+        
+        // PRIORIDADE 1: Se estamos no modo mover HUD, verificar se o clique é na área do HUD
+        // Mas SOMENTE se não estiver sobre nenhum botão
+        if (moveHudMode && button == 0) {
+            // Primeiro verifica se NÃO está sobre nenhum widget (botão)
+            boolean overWidget = false;
+            for (var child : this.children()) {
+                if (child.isMouseOver(mouseX, mouseY)) {
+                    overWidget = true;
+                    System.out.println("[ShowMe DEBUG] Mouse está sobre um widget");
+                    break;
+                }
+            }
+
+            // Se não está sobre um widget, verifica se está sobre a prévia do HUD
+            if (!overWidget) {
+                PreviewSize size = computePreviewSize();
+                int width = this.width;
+                int height = this.height;
+
+                int availW = Math.max(0, width - size.maxWidth);
+                int availH = Math.max(0, height - size.totalHeight);
+
+                int hudX = Math.round(draft.hudPosXPct * availW);
+                int hudY = Math.round(draft.hudPosYPct * availH);
+
+                System.out.println("[ShowMe DEBUG] HUD area: x=" + hudX + "-" + (hudX + size.maxWidth) + ", y=" + hudY + "-" + (hudY + size.totalHeight));
+
+                if (mouseX >= hudX && mouseX <= hudX + size.maxWidth &&
+                    mouseY >= hudY && mouseY <= hudY + size.totalHeight) {
+                    draggingHud = true;
+                    dragOffsetX = (int)mouseX - hudX;
+                    dragOffsetY = (int)mouseY - hudY;
+                    System.out.println("[ShowMe DEBUG] Iniciando drag do HUD!");
+                    return true;
+                }
+            }
+        }
+
         int viewport = contentBottom - contentTop;
 
-        // Clique na barra de rolagem
+        // PRIORIDADE 2: Clique na barra de rolagem
         if (button == 0 && contentHeight > viewport) {
             int trackX1 = contentLeft + contentWidth - SCROLLBAR_W;
             int trackX2 = trackX1 + SCROLLBAR_W;
@@ -284,33 +334,13 @@ public class ShowMeConfigScreen extends Screen {
             }
         }
 
-        // Clique para mover HUD
-        if (moveHudMode && button == 0) {
-            PreviewSize size = computePreviewSize();
-            int width = this.width;
-            int height = this.height;
-
-            int availW = Math.max(0, width - size.maxWidth);
-            int availH = Math.max(0, height - size.totalHeight);
-
-            int hudX = Math.round(draft.hudPosXPct * availW);
-            int hudY = Math.round(draft.hudPosYPct * availH);
-
-            if (mouseX >= hudX && mouseX <= hudX + size.maxWidth &&
-                mouseY >= hudY && mouseY <= hudY + size.totalHeight) {
-                draggingHud = true;
-                dragOffsetX = (int)mouseX - hudX;
-                dragOffsetY = (int)mouseY - hudY;
-                return true;
-            }
-        }
-
-        return super.mouseClicked(mouseX, mouseY, button);
+        return false;
     }
 
-    @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        // Arraste da barra
+        // NOTA: Este método não é chamado no Minecraft 1.21.9 devido a mudanças na API.
+        
+        // Arraste da barra de rolagem (mantido para compatibilidade)
         if (draggingScrollbar) {
             int viewport = contentBottom - contentTop;
             int maxScroll = Math.max(0, contentHeight - viewport);
@@ -325,8 +355,8 @@ public class ShowMeConfigScreen extends Screen {
             return true;
         }
 
-        // Arraste do HUD
-        if (moveHudMode && draggingHud && button == 0) {
+        // Arraste do HUD (mantido para compatibilidade com versões antigas)
+        if (moveHudMode && button == 0) {
             PreviewSize size = computePreviewSize();
             int width = this.width;
             int height = this.height;
@@ -334,37 +364,90 @@ public class ShowMeConfigScreen extends Screen {
             int availW = Math.max(0, width - size.maxWidth);
             int availH = Math.max(0, height - size.totalHeight);
 
-            int newX = (int)Math.round(mouseX) - dragOffsetX;
-            int newY = (int)Math.round(mouseY) - dragOffsetY;
+            // Se ainda não está arrastando, verifica se está sobre o HUD
+            if (!draggingHud) {
+                int hudX = Math.round(draft.hudPosXPct * availW);
+                int hudY = Math.round(draft.hudPosYPct * availH);
+                
+                // Verifica se o mouse está sobre a área do HUD
+                if (mouseX >= hudX && mouseX <= hudX + size.maxWidth &&
+                    mouseY >= hudY && mouseY <= hudY + size.totalHeight) {
+                    // Inicia o drag
+                    draggingHud = true;
+                    dragOffsetX = (int)mouseX - hudX;
+                    dragOffsetY = (int)mouseY - hudY;
+                }
+            }
+            
+            // Se está arrastando, atualiza a posição
+            if (draggingHud) {
+                int newX = (int)Math.round(mouseX) - dragOffsetX;
+                int newY = (int)Math.round(mouseY) - dragOffsetY;
 
-            newX = Math.max(0, Math.min(newX, availW));
-            newY = Math.max(0, Math.min(newY, availH));
+                newX = Math.max(0, Math.min(newX, availW));
+                newY = Math.max(0, Math.min(newY, availH));
 
-            draft.hudPosXPct = availW == 0 ? 0f : (float)newX / (float)availW;
-            draft.hudPosYPct = availH == 0 ? 0f : (float)newY / (float)availH;
+                draft.hudPosXPct = availW == 0 ? 0f : (float)newX / (float)availW;
+                draft.hudPosYPct = availH == 0 ? 0f : (float)newY / (float)availH;
 
-            return true;
+                return true;
+            }
         }
 
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return false;
     }
 
-    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        boolean consumed = false;
         if (draggingScrollbar && button == 0) {
             draggingScrollbar = false;
-            consumed = true;
+            return true;
         }
         if (draggingHud && button == 0) {
             draggingHud = false;
-            consumed = true;
+            return true;
         }
-        return consumed || super.mouseReleased(mouseX, mouseY, button);
+        return false;
     }
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+        // SOLUÇÃO PARA MINECRAFT 1.21.9:
+        // Os métodos mouseClicked() e mouseDragged() não são mais chamados devido a mudanças na API.
+        // Detectamos o estado do botão do mouse diretamente via GLFW durante o render.
+        if (moveHudMode && this.client != null && this.client.getWindow() != null) {
+            long window = this.client.getWindow().getHandle();
+            boolean leftButtonPressed = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+            
+            PreviewSize size = computePreviewSize();
+            int availW = Math.max(0, this.width - size.maxWidth);
+            int availH = Math.max(0, this.height - size.totalHeight);
+            
+            int hudX = Math.round(draft.hudPosXPct * availW);
+            int hudY = Math.round(draft.hudPosYPct * availH);
+            
+            // Verifica se mouse está sobre o HUD
+            boolean mouseOverHud = mouseX >= hudX && mouseX <= hudX + size.maxWidth &&
+                                  mouseY >= hudY && mouseY <= hudY + size.totalHeight;
+            
+            if (leftButtonPressed && mouseOverHud && !draggingHud) {
+                // Inicia arrasto
+                draggingHud = true;
+                dragOffsetX = mouseX - hudX;
+                dragOffsetY = mouseY - hudY;
+            } else if (!leftButtonPressed && draggingHud) {
+                // Termina arrasto
+                draggingHud = false;
+            } else if (draggingHud && leftButtonPressed) {
+                // Atualiza posição durante arrasto
+                int newX = mouseX - dragOffsetX;
+                int newY = mouseY - dragOffsetY;
+                newX = Math.max(0, Math.min(newX, availW));
+                newY = Math.max(0, Math.min(newY, availH));
+                draft.hudPosXPct = availW == 0 ? 0f : (float)newX / (float)availW;
+                draft.hudPosYPct = availH == 0 ? 0f : (float)newY / (float)availH;
+            }
+        }
+        
         // Sem blur/fundo sólido para evitar crash
         ctx.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 6, 0xFFFFFF);
 
@@ -408,6 +491,15 @@ public class ShowMeConfigScreen extends Screen {
         cancelAndClose();
     }
 
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // Tecla X para fechar ou ESC
+        if (keyCode == GLFW.GLFW_KEY_X || keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            close();
+            return true;
+        }
+        return false;
+    }
+
     private void saveAndClose() {
         draft.applyTo(ShowMeClient.CONFIG);
         try {
@@ -441,10 +533,10 @@ public class ShowMeConfigScreen extends Screen {
         if (draft.showPing) lines.add("Ping: 42 ms");
         if (draft.showMemory) lines.add("Memória: 512/8192 MB");
         if (draft.showSeed) lines.add("Seed: 123456789");
-        //if (draft.showDebug) {
-        //    lines.add("Window Width: 1920");
-        //    lines.add("Window Height: 1080");
-        //}
+        if (draft.showDebug) {
+            lines.add("Window Width: 1920");
+            lines.add("Window Height: 1080");
+        }
         if (lines.isEmpty()) lines.add("HUD");
 
         int maxW = 0;
@@ -478,8 +570,7 @@ public class ShowMeConfigScreen extends Screen {
     private record PreviewSize(int maxWidth, int totalHeight) {}
 
     private static class WorkingConfig {
-        //boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory, showDebug;
-        boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory;
+        boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory, showDebug;
         boolean useCustomHudPos;           // <— novo
         float hudPosXPct, hudPosYPct;
 
@@ -493,7 +584,7 @@ public class ShowMeConfigScreen extends Screen {
             showSeed = src.showSeed;
             showPing = src.showPing;
             showMemory = src.showMemory;
-            //showDebug = src.showDebug;
+            showDebug = src.showDebug;
 
             useCustomHudPos = src.useCustomHudPos;   // <— novo
             hudPosXPct = src.hudPosXPct;
@@ -509,7 +600,7 @@ public class ShowMeConfigScreen extends Screen {
             dst.showSeed = showSeed;
             dst.showPing = showPing;
             dst.showMemory = showMemory;
-            //dst.showDebug = showDebug;
+            dst.showDebug = showDebug;
 
             dst.useCustomHudPos = useCustomHudPos;   // <— novo
             dst.hudPosXPct = hudPosXPct;
@@ -532,7 +623,7 @@ public class ShowMeConfigScreen extends Screen {
         int marginH = Math.max(10, (int) (this.width * pct));
 
         contentLeft = marginH;
-        contentTop = marginTop + TOP_BAR_H; // deixa espaço para a top bar
+        contentTop = marginTop + TOP_BAR_H; 
         contentWidth = this.width - marginH * 2;
         contentBottom = this.height - marginTop - 24;
     }

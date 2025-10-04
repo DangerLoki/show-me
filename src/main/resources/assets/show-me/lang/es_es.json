@@ -31,9 +31,9 @@
   "key.hud.day": "Día: %d",
   "key.hud.biome": "Bioma: %s",
   "key.hud.unknownBiome": "Desconocido",
-  "key.hud.brightness": "Luz (Bloque/Cielo): %d / %d",
+  "key.hud.brightness": "Luz (Bloque/Cielo) %d / %d",
   "key.hud.ping": "Ping: %s ms",
   "key.hud.memory": "Mem: %d / %d MB (%d%%)",
-  "key.hud.time": "Hora: ",
+  "key.hud.time": "Hora: %02d:%02d",
   "key.hud.seed": "Semilla: %s"
 }

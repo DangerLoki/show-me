@@ -94,7 +94,7 @@ publishing {
 		// recuperar dependências.
 	}
 }
-/*
+
 task compileNative(type: Exec) {
 	description = "Compile native code (C++) before the Java Build"
 	group = "native"
@@ -124,7 +124,6 @@ task compileNative(type: Exec) {
 								"-lOpenCL",
 								"-o", "${outputDir}/libgpu_monitor.so"
 }
-
 task compileNativeWindows(type: Exec) {
     description = "Compile native code (C++) for Windows"
     group = "native"
@@ -156,4 +155,3 @@ task compileNativeWindows(type: Exec) {
                                 "-Wl,-Bdynamic",
                                 "-o", "${outputDir}/gpu_monitor.dll"
 }
-*/
