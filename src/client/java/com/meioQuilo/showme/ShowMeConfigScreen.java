@@ -76,6 +76,7 @@ public class ShowMeConfigScreen extends Screen {
         world.addOption("key.option.showClock", () -> cfg.showClock, v -> cfg.showClock = v);
         world.addOption("key.option.showCoordinates", () -> cfg.showCoords, v -> cfg.showCoords = v);
         world.addOption("key.option.showSeed", () -> cfg.showSeed, v -> cfg.showSeed = v);
+        world.addOption("key.option.showSlimeChunks", () -> cfg.showSlimeChunks, v -> cfg.showSlimeChunks = v);
 
         Section net = new Section("key.category.multiplayer");
         net.addOption("key.option.showPing", () -> cfg.showPing, v -> cfg.showPing = v);
@@ -570,7 +571,7 @@ public class ShowMeConfigScreen extends Screen {
     private record PreviewSize(int maxWidth, int totalHeight) {}
 
     private static class WorkingConfig {
-        boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory; // showDebug;
+        boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory, showSlimeChunks;
         boolean useCustomHudPos;           // <— novo
         float hudPosXPct, hudPosYPct;
 
@@ -584,6 +585,7 @@ public class ShowMeConfigScreen extends Screen {
             showSeed = src.showSeed;
             showPing = src.showPing;
             showMemory = src.showMemory;
+            showSlimeChunks = src.showSlimeChunks;
             // showDebug = src.showDebug;
 
             useCustomHudPos = src.useCustomHudPos;   // <— novo
@@ -600,6 +602,7 @@ public class ShowMeConfigScreen extends Screen {
             dst.showSeed = showSeed;
             dst.showPing = showPing;
             dst.showMemory = showMemory;
+            dst.showSlimeChunks = showSlimeChunks;
             // dst.showDebug = showDebug;
 
             dst.useCustomHudPos = useCustomHudPos;   // <— novo

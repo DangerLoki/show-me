@@ -24,6 +24,7 @@
 	"key.option.showMemory": "Memória",
 	"key.option.showClock": "Relógio",
 	"key.option.showSeed": "Seed",
+	"key.option.showSlimeChunks": "Mostrar Slime Chunks",
 
 	"key.hud.visible" : "Visível",
 	"key.hud.hidden" : "Oculto",
