@@ -85,6 +85,9 @@ public class ShowMeClient implements ClientModInitializer {
             renderHud(drawContext);
 
         });
+        
+        // TODO: Registrar overlay do mundo para slime chunks em versão futura
+        // SlimeChunkWorldOverlay.register();
     }
 
     private static void renderHud(DrawContext ctx) {
@@ -168,7 +171,7 @@ public class ShowMeClient implements ClientModInitializer {
 
         // exibir informação de slime chunk
         if (CONFIG.showSlimeChunks) {
-            addSlimeChunkInfo(lines, mc);
+            SlimeChunkRenderer.renderSlimeChunkInfo(ctx, lines);
         }
 
         if (lines.isEmpty())

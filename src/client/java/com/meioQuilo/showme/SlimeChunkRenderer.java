@@ -28,12 +28,12 @@ public class SlimeChunkRenderer {
             hasSeed = true;
         } else {
             // Multiplayer - não temos acesso à seed
-            lines.add("Chunk: Seed desconhecida (MP)");
+            lines.add("§c✗ Seed indisponível (MP)");
             return;
         }
         
         if (!hasSeed) {
-            lines.add("Chunk: Seed não disponível");
+            lines.add("§c✗ Seed não disponível");
             return;
         }
         
@@ -41,132 +41,33 @@ public class SlimeChunkRenderer {
             seed, playerX, playerY, playerZ
         );
         
-        String text;
+        // Renderizar apenas a informação básica do chunk atual
+        String baseText = String.format("Chunk (%d,%d): ", chunkX, chunkZ);
+        String statusText;
+        String colorCode = "";
+        String symbol = "";
+        
         switch (type) {
             case NOT_SLIME:
-                text = String.format("Chunk (%d,%d): Não é Slime", chunkX, chunkZ);
+                colorCode = "§c";
+                symbol = "✗ ";
+                statusText = "Normal";
                 break;
             case SLIME_WRONG_HEIGHT:
-                text = String.format("Chunk (%d,%d): Slime (Y≥40)", chunkX, chunkZ);
+                colorCode = "§6";
+                symbol = "⚠ ";
+                statusText = "Slime (Y≥40)";
                 break;
             case SLIME_VALID:
-                text = String.format("Chunk (%d,%d): Slime (Y<40)", chunkX, chunkZ);
+                colorCode = "§a";
+                symbol = "✓ ";
+                statusText = "Slime Farm!";
                 break;
             default:
-                return;
+                colorCode = "§7";
+                symbol = "? ";
+                statusText = "Desconhecido";
         }
-        
-        lines.add(text);
-        
-        // Adicionar informação extra para slime chunks
-        if (type != SlimeChunkDetector.SlimeChunkType.NOT_SLIME) {
-            lines.add("⚠ Slime Chunk Detectado!");
-            
-            // Mostrar chunks adjacentes também
-            String adjacentInfo = getAdjacentSlimeChunks(seed, chunkX, chunkZ, playerY);
-            if (!adjacentInfo.isEmpty()) {
-                lines.add(adjacentInfo);
-            }
-            
-            // Adicionar informações úteis sobre slime spawn
-            if (type == SlimeChunkDetector.SlimeChunkType.SLIME_VALID) {
-                lines.add("✓ Altura ideal para slimes!");
-            } else {
-                lines.add("⚠ Desça para Y < 40 para slimes");
-            }
-        }
-        
-        // Mostrar mapa visual 3x3 dos chunks ao redor
-        if (type != SlimeChunkDetector.SlimeChunkType.NOT_SLIME) {
-            String mapInfo = getChunkMap(seed, chunkX, chunkZ, playerY);
-            if (!mapInfo.isEmpty()) {
-                lines.add("Mapa 3x3:");
-                lines.add(mapInfo);
-            }
-        }
-    }
-    
-    private static String getAdjacentSlimeChunks(long seed, int centerX, int centerZ, double playerY) {
-        int slimeCount = 0;
-        
-        // Verificar chunks 3x3 ao redor
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dz = -1; dz <= 1; dz++) {
-                if (dx == 0 && dz == 0) continue; // Pular o chunk central
-                
-                int chunkX = centerX + dx;
-                int chunkZ = centerZ + dz;
-                
-                SlimeChunkDetector.SlimeChunkType type = SlimeChunkDetector.getSlimeChunkType(
-                    seed, chunkX * 16 + 8, playerY, chunkZ * 16 + 8
-                );
-                
-                if (type != SlimeChunkDetector.SlimeChunkType.NOT_SLIME) {
-                    slimeCount++;
-                }
-            }
-        }
-        
-        if (slimeCount > 0) {
-            return String.format("Adjacentes: %d slime chunks", slimeCount);
-        }
-        
-        return "";
-    }
-    
-    /**
-     * Cria um mapa visual 3x3 dos chunks ao redor
-     */
-    private static String getChunkMap(long seed, int centerX, int centerZ, double playerY) {
-        StringBuilder map = new StringBuilder();
-        
-        for (int dz = -1; dz <= 1; dz++) {
-            for (int dx = -1; dx <= 1; dx++) {
-                int chunkX = centerX + dx;
-                int chunkZ = centerZ + dz;
-                
-                SlimeChunkDetector.SlimeChunkType type = SlimeChunkDetector.getSlimeChunkType(
-                    seed, chunkX * 16 + 8, playerY, chunkZ * 16 + 8
-                );
-                
-                String symbol;
-                if (dx == 0 && dz == 0) {
-                    // Chunk atual
-                    switch (type) {
-                        case NOT_SLIME:
-                            symbol = "[X]";
-                            break;
-                        case SLIME_WRONG_HEIGHT:
-                            symbol = "[S]";
-                            break;
-                        case SLIME_VALID:
-                            symbol = "[S]";
-                            break;
-                        default:
-                            symbol = "[?]";
-                    }
-                } else {
-                    // Chunks adjacentes
-                    switch (type) {
-                        case NOT_SLIME:
-                            symbol = " . ";
-                            break;
-                        case SLIME_WRONG_HEIGHT:
-                            symbol = " s ";
-                            break;
-                        case SLIME_VALID:
-                            symbol = " S ";
-                            break;
-                        default:
-                            symbol = " ? ";
-                    }
-                }
-                
-                map.append(symbol);
-            }
-            if (dz < 1) map.append(" ");
-        }
-        
-        return map.toString();
+        lines.add(colorCode + symbol + baseText + statusText);
     }
 }
