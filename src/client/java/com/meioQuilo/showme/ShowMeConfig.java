@@ -44,7 +44,6 @@ public class ShowMeConfig {
     public boolean showClock = false;
     public boolean showSeed = false;
     public String gpuName;
-    public boolean showSlimeChunks = false;
 
     public static ShowMeConfig load() {
         if (Files.exists(CONFIG_PATH)) {
