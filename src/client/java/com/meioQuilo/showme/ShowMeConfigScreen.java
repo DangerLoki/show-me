@@ -84,13 +84,13 @@ public class ShowMeConfigScreen extends Screen {
         system.addOption("key.option.showFps", () -> cfg.showFps, v -> cfg.showFps = v);
         system.addOption("key.option.showMemory", () -> cfg.showMemory, v -> cfg.showMemory = v);
 
-        Section debug = new Section("key.category.diagnosis");
-        debug.addOption("key.option.showDebug", () -> cfg.showDebug, v -> cfg.showDebug = v);
+        // Section debug = new Section("key.category.diagnosis");
+        // debug.addOption("key.option.showDebug", () -> cfg.showDebug, v -> cfg.showDebug = v);
 
         sections.add(world);
         sections.add(net);
         sections.add(system);
-        sections.add(debug);
+        // sections.add(debug);
     }
 
     private void rebuildWidgets() {
@@ -533,10 +533,10 @@ public class ShowMeConfigScreen extends Screen {
         if (draft.showPing) lines.add("Ping: 42 ms");
         if (draft.showMemory) lines.add("Memória: 512/8192 MB");
         if (draft.showSeed) lines.add("Seed: 123456789");
-        if (draft.showDebug) {
-            lines.add("Window Width: 1920");
-            lines.add("Window Height: 1080");
-        }
+        // if (draft.showDebug) {
+        //     lines.add("Window Width: 1920");
+        //     lines.add("Window Height: 1080");
+        // }
         if (lines.isEmpty()) lines.add("HUD");
 
         int maxW = 0;
@@ -570,7 +570,7 @@ public class ShowMeConfigScreen extends Screen {
     private record PreviewSize(int maxWidth, int totalHeight) {}
 
     private static class WorkingConfig {
-        boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory, showDebug;
+        boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory; // showDebug;
         boolean useCustomHudPos;           // <— novo
         float hudPosXPct, hudPosYPct;
 
@@ -584,7 +584,7 @@ public class ShowMeConfigScreen extends Screen {
             showSeed = src.showSeed;
             showPing = src.showPing;
             showMemory = src.showMemory;
-            showDebug = src.showDebug;
+            // showDebug = src.showDebug;
 
             useCustomHudPos = src.useCustomHudPos;   // <— novo
             hudPosXPct = src.hudPosXPct;
@@ -600,7 +600,7 @@ public class ShowMeConfigScreen extends Screen {
             dst.showSeed = showSeed;
             dst.showPing = showPing;
             dst.showMemory = showMemory;
-            dst.showDebug = showDebug;
+            // dst.showDebug = showDebug;
 
             dst.useCustomHudPos = useCustomHudPos;   // <— novo
             dst.hudPosXPct = hudPosXPct;
