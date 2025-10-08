@@ -166,6 +166,11 @@ public class ShowMeClient implements ClientModInitializer {
             lines.add(Text.translatable("key.hud.seed", seedText).getString());
         }
 
+        // exibir informação de slime chunk
+        if (CONFIG.showSlimeChunks) {
+            addSlimeChunkInfo(lines, mc);
+        }
+
         if (lines.isEmpty())
             return;
         
@@ -265,5 +270,57 @@ public class ShowMeClient implements ClientModInitializer {
             ctx.drawTextWithShadow(font, l, x, drawY, 0xFFFFFFFF);
             drawY += font.fontHeight + lineSpacing;
         }
+    }
+
+    private static void addSlimeChunkInfo(List<String> lines, MinecraftClient mc) {
+        if (mc.world == null || mc.player == null) return;
+        
+        double playerX = mc.player.getX();
+        double playerY = mc.player.getY();
+        double playerZ = mc.player.getZ();
+        
+        int chunkX = (int) Math.floor(playerX) >> 4;
+        int chunkZ = (int) Math.floor(playerZ) >> 4;
+        
+        // Obter seed do mundo
+        long seed = 0;
+        boolean hasSeed = false;
+        
+        if (mc.getServer() != null) {
+            seed = mc.getServer().getOverworld().getSeed();
+            hasSeed = true;
+        }
+        
+        if (!hasSeed) {
+            lines.add("Chunk: Seed indisponível (MP)");
+            return;
+        }
+        
+        // Verificar se é slime chunk usando algoritmo do Minecraft
+        boolean isSlimeChunk = isSlimeChunk(seed, chunkX, chunkZ);
+        boolean validHeight = playerY < 40;
+        
+        String chunkInfo;
+        if (!isSlimeChunk) {
+            chunkInfo = String.format("Chunk (%d,%d): Normal", chunkX, chunkZ);
+        } else if (!validHeight) {
+            chunkInfo = String.format("Chunk (%d,%d): Slime (Y≥40)", chunkX, chunkZ);
+        } else {
+            chunkInfo = String.format("Chunk (%d,%d): Slime (Y<40)", chunkX, chunkZ);
+        }
+        
+        lines.add(chunkInfo);
+    }
+    
+    private static boolean isSlimeChunk(long worldSeed, int chunkX, int chunkZ) {
+        java.util.Random random = new java.util.Random(
+            worldSeed +
+            (long)(chunkX * chunkX * 0x4c1906) +
+            (long)(chunkX * 0x5ac0db) +
+            (long)(chunkZ * chunkZ) * 0x4307a7L +
+            (long)(chunkZ * 0x5f24f) ^ 0x3ad76c0L
+        );
+        
+        return random.nextInt(10) == 0;
     }
 }

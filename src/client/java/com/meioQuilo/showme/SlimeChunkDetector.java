@@ -1,8 +1,5 @@
 package com.meioQuilo.showme;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 import java.util.Random;
 
 public class SlimeChunkDetector {
