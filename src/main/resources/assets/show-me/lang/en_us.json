@@ -31,7 +31,7 @@
   "key.hud.day": "Day: %d",
   "key.hud.biome": "Biome: %s",
   "key.hud.unknownBiome": "Unknown",
-  "key.hud.brightness": "Light (Block/Sky): %d / %d",
+  "key.hud.brightness": "Light (Block/Sky) %d / %d",
   "key.hud.ping": "Ping: %s ms",
   "key.hud.memory": "Mem: %d / %d MB (%d%%)",
   "key.hud.time": "Time: ",

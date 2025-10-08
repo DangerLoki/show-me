@@ -25,7 +25,8 @@ public class ShowMeClient implements ClientModInitializer {
     private static KeyBinding toggleHudKey;
     private static KeyBinding openMenuKey;
 
-    //private boolean nativeLoaded = false;
+    // Categoria para os keybinds (use MISC para compilar em 1.21.x)
+    private static final KeyBinding.Category SHOW_ME_CATEGORY = KeyBinding.Category.MISC;
 
     private static void toast(MinecraftClient mc, String msg) {
         if (mc != null && mc.player != null) {
@@ -35,19 +36,23 @@ public class ShowMeClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-
         System.out.println("[ShowMe] Inicializando mod - registrando teclas...");
 
         toggleHudKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.showme.toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_X,
-                "key.categories.showme"));
+                "key.showme.toggle_hud",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_H,
+                SHOW_ME_CATEGORY
+        ));
 
         openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.showme.open_menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z,
-                "key.categories.showme"));
+                "key.showme.open_menu",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_Z,
+                SHOW_ME_CATEGORY
+        ));
 
-        // Ajuste da mensagem: X alterna HUD e Z abre o menu
-        System.out.println("[ShowMe] Teclas registradas: X (toggle HUD) e Z (menu)");
+        System.out.println("[ShowMe] Teclas registradas: H (toggle HUD) e Z (menu)");
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleHudKey.wasPressed()) {
