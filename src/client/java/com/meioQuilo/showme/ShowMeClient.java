@@ -1,6 +1,7 @@
 // ShowMeClient.java
 package com.meioQuilo.showme;
 
+import com.meioQuilo.showme.slime.SlimeCalculator;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -92,7 +93,7 @@ public class ShowMeClient implements ClientModInitializer {
         }
         if (CONFIG.showCoords) {
             BlockPos pos = mc.player.getBlockPos();
-            lines.add(String.format("XYZ: %d / %d / %d", pos.getX(), pos.getY(), pos.getZ()));
+            lines.add(Text.translatable("key.hud.coords", pos.getX(), pos.getY(), pos.getZ()).getString());
         }
         if (CONFIG.showBrightness) {
             BlockPos pos = mc.player.getBlockPos();
@@ -111,7 +112,8 @@ public class ShowMeClient implements ClientModInitializer {
             long tod = t % 24000L;
             int hour = (int) ((tod / 1000L + 6) % 24);
             int minute = (int) ((tod % 1000L) * 60 / 1000L);
-            lines.add(Text.translatable("key.hud.time").append(String.format("%02d:%02d", hour, minute)).getString());
+            String formattedTime = String.format("%02d:%02d", hour, minute);
+            lines.add(Text.translatable("key.hud.time", formattedTime).getString());
         }
 
         if (CONFIG.showBiome) {
@@ -153,6 +155,26 @@ public class ShowMeClient implements ClientModInitializer {
                 seedText = String.valueOf(seed);
             }
             lines.add(Text.translatable("key.hud.seed", seedText).getString());
+        }
+
+        // exibir informações de slime chunk
+        if (CONFIG.showSlimeInfo && mc.player != null) {
+            BlockPos pos = mc.player.getBlockPos();
+            int chunkX = Math.floorDiv(pos.getX(), 16);
+            int chunkZ = Math.floorDiv(pos.getZ(), 16);
+            
+            String slimeText;
+            if (mc.getServer() != null) { // singleplayer (integrated server)
+                long seed = mc.getServer().getOverworld().getSeed();
+                boolean isSlimeChunk = SlimeCalculator.isSlimeChunk(seed, chunkX, chunkZ);
+                slimeText = isSlimeChunk ? 
+                    Text.translatable("key.hud.slime.chunk").getString() : 
+                    Text.translatable("key.hud.slime.not_chunk").getString();
+            } else {
+                // Em multiplayer, não temos acesso à seed
+                slimeText = Text.translatable("key.hud.slime.unknown").getString();
+            }
+            lines.add(slimeText);
         }
 
         if (lines.isEmpty())
@@ -250,3 +272,4 @@ public class ShowMeClient implements ClientModInitializer {
         }
     }
 }
+

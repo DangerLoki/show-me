@@ -43,6 +43,7 @@ public class ShowMeConfig {
     public boolean showMemory = false;
     public boolean showClock = false;
     public boolean showSeed = false;
+    public boolean showSlimeInfo = false;
 
     public static ShowMeConfig load() {
         if (Files.exists(CONFIG_PATH)) {
