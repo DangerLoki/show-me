@@ -19,4 +19,11 @@ public class GpuMonitorTest {
 		System.out.println("GPU Name: " + name);
 	}
 
+	@Test
+	void testGetVram() {
+		double vram = Math.ceil(GpuMonitor.getVram());
+		assertTrue(vram > 0, "VRAM should be greater than 0");
+		System.out.println("VRAM: " + vram + " GB");
+	}
+
 }

@@ -129,8 +129,8 @@ task compileNativeWindows(type: Exec) {
     group = "native"
 
     def outputDir = "${projectDir}/src/main/resources/natives"
-    def includeDir = "${projectDir}/native/include/windows"
-    def libDir = "${projectDir}/native/lib"
+    def includeDir = "${projectDir}/native/include/"
+    def libDir = "${projectDir}/native/lib/windows"
     def sourceFiles = fileTree("${projectDir}/native") {
         include '*.cpp'
     }

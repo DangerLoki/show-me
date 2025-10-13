@@ -26,6 +26,8 @@ public class ShowMeClient implements ClientModInitializer {
     private static KeyBinding toggleHudKey;
     private static KeyBinding openMenuKey;
 
+    private static boolean nativeLoaded = false;
+
     // Categoria para os keybinds (use MISC para compilar em 1.21.x)
     private static final KeyBinding.Category SHOW_ME_CATEGORY = KeyBinding.Category.MISC;
 
@@ -54,17 +56,17 @@ public class ShowMeClient implements ClientModInitializer {
         System.out.println("[ShowMe] Teclas registradas: H (toggle HUD) e Z (menu)");
 
         HudElementRegistry.addLast(Identifier.of("show_me", "show_me_hud"), (drawContext, tickCounter) -> {
-                renderHud(drawContext);
+            renderHud(drawContext);
         });
 
-        //if (!nativeLoaded) {
-            //      * try {
-            //      * ShowMeNativeLoader.loadNative();
-            //      * nativeLoaded = true;
-            //      * } catch (Exception e) {
-            //      * e.printStackTrace();
-            //      * }
-            //      * }
+        if (!nativeLoaded) {
+            try {
+                ShowMeNativeLoader.loadNative();
+                nativeLoaded = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleHudKey.wasPressed()) {
@@ -93,7 +95,7 @@ public class ShowMeClient implements ClientModInitializer {
 
         var font = mc.textRenderer;
         List<String> lines = new ArrayList<>();
-        // List<String> debugLines = new ArrayList<>();
+        List<String> debugLines = new ArrayList<>();
 
         if (CONFIG.showFps) {
             lines.add("FPS: " + mc.getCurrentFps());
@@ -167,9 +169,9 @@ public class ShowMeClient implements ClientModInitializer {
             return;
 
         int width = ctx.getScaledWindowWidth();
-        // debugLines.add(String.format("Window Width: %d", width));
+        debugLines.add(String.format("Window Width: %d", width));
         int height = ctx.getScaledWindowHeight();
-        // debugLines.add(String.format("Window Height: %d", height));
+        debugLines.add(String.format("Window Height: %d", height));
 
         int paddingX = 4;
         int paddingY = 3;
@@ -178,21 +180,23 @@ public class ShowMeClient implements ClientModInitializer {
 
         var chatHud = mc.inGameHud.getChatHud();
         int chatLines = chatHud.getVisibleLineCount();
-        // debugLines.add(String.format("Chat Line Count: %d", chatLines));
+        //debugLines.add(String.format("Chat Line Count: %d", chatLines));
         double chatScale = chatHud.getChatScale();
-        // debugLines.add(String.format("Chat Scale: %f", chatScale));
+        //debugLines.add(String.format("Chat Scale: %f", chatScale));
         int chatHeight = (int) ((chatLines * font.fontHeight) * chatScale);
-        // debugLines.add(String.format("Calculated ChatHeight: %d", chatHeight));
+        //debugLines.add(String.format("Calculated ChatHeight: %d", chatHeight));
 
-        // if (CONFIG.gpuName == null) {
-        // CONFIG.gpuName = GpuMonitor.getName();
-        // }
+        if (CONFIG.gpuName == null) {
+            CONFIG.gpuName = GpuMonitor.getName();
+            CONFIG.gpuVram = Math.ceil(GpuMonitor.getVram());
+        }
 
-        // debugLines.add(CONFIG.gpuName);
+        debugLines.add(CONFIG.gpuName);
+        debugLines.add(String.format("VRAM: %.1f GB", CONFIG.gpuVram));
 
-        // if (CONFIG.showDebug) {
-        // lines.addAll(debugLines);
-        // }
+        if (CONFIG.showDebug) {
+            lines.addAll(debugLines);
+        }
 
         // Calcula tamanho do overlay
         int maxWidth = 0;
