@@ -4,12 +4,16 @@ package com.meioQuilo.showme;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+// import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+// import net.fabricmc.fabric.api.client.rendering.v1.InGameHudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 
@@ -42,17 +46,28 @@ public class ShowMeClient implements ClientModInitializer {
                 "key.showme.toggle_hud",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_H,
-                SHOW_ME_CATEGORY
-        ));
+                SHOW_ME_CATEGORY));
 
         openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.showme.open_menu",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_Z,
-                SHOW_ME_CATEGORY
-        ));
+                SHOW_ME_CATEGORY));
 
         System.out.println("[ShowMe] Teclas registradas: H (toggle HUD) e Z (menu)");
+
+        HudElementRegistry.addLast(Identifier.of("show_me", "show_me_hud"), (drawContext, tickCounter) -> {
+                renderHud(drawContext);
+        });
+
+        //if (!nativeLoaded) {
+            //      * try {
+            //      * ShowMeNativeLoader.loadNative();
+            //      * nativeLoaded = true;
+            //      * } catch (Exception e) {
+            //      * e.printStackTrace();
+            //      * }
+            //      * }
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleHudKey.wasPressed()) {
@@ -70,21 +85,6 @@ public class ShowMeClient implements ClientModInitializer {
                 }
             }
         });
-
-        HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
-            /*
-            if (!nativeLoaded) {
-                try {
-                    ShowMeNativeLoader.loadNative();
-                    nativeLoaded = true;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            */
-            renderHud(drawContext);
-
-        });
     }
 
     private static void renderHud(DrawContext ctx) {
@@ -96,7 +96,7 @@ public class ShowMeClient implements ClientModInitializer {
 
         var font = mc.textRenderer;
         List<String> lines = new ArrayList<>();
-        //List<String> debugLines = new ArrayList<>();
+        // List<String> debugLines = new ArrayList<>();
 
         if (CONFIG.showFps) {
             lines.add("FPS: " + mc.getCurrentFps());
@@ -168,35 +168,34 @@ public class ShowMeClient implements ClientModInitializer {
 
         if (lines.isEmpty())
             return;
-        
-        
+
         int width = ctx.getScaledWindowWidth();
-        //debugLines.add(String.format("Window Width: %d", width));
+        // debugLines.add(String.format("Window Width: %d", width));
         int height = ctx.getScaledWindowHeight();
-        //debugLines.add(String.format("Window Height: %d", height));
+        // debugLines.add(String.format("Window Height: %d", height));
 
         int paddingX = 4;
         int paddingY = 3;
         int lineSpacing = 2;
         int margin = 3;
-        
+
         var chatHud = mc.inGameHud.getChatHud();
         int chatLines = chatHud.getVisibleLineCount();
-        //debugLines.add(String.format("Chat Line Count: %d", chatLines));
+        // debugLines.add(String.format("Chat Line Count: %d", chatLines));
         double chatScale = chatHud.getChatScale();
-        //debugLines.add(String.format("Chat Scale: %f", chatScale));
+        // debugLines.add(String.format("Chat Scale: %f", chatScale));
         int chatHeight = (int) ((chatLines * font.fontHeight) * chatScale);
-        //debugLines.add(String.format("Calculated ChatHeight: %d", chatHeight));
+        // debugLines.add(String.format("Calculated ChatHeight: %d", chatHeight));
 
-        //if (CONFIG.gpuName == null) {
-        //    CONFIG.gpuName = GpuMonitor.getName();
-        //}
+        // if (CONFIG.gpuName == null) {
+        // CONFIG.gpuName = GpuMonitor.getName();
+        // }
 
-        //debugLines.add(CONFIG.gpuName);
+        // debugLines.add(CONFIG.gpuName);
 
-        //if (CONFIG.showDebug) {
-        //    lines.addAll(debugLines);
-        //}
+        // if (CONFIG.showDebug) {
+        // lines.addAll(debugLines);
+        // }
 
         // Calcula tamanho do overlay
         int maxWidth = 0;
@@ -250,7 +249,7 @@ public class ShowMeClient implements ClientModInitializer {
             }
         }
 
-        //debugLines.add(String.format("Calculated y: %d", y));
+        // debugLines.add(String.format("Calculated y: %d", y));
         // Desenha background
         ctx.fill(
                 x - paddingX,

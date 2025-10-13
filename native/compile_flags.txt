@@ -1,2 +1,2 @@
--I/usr/lib/jvm/java-21-openjdk-amd64/include
--I/usr/lib/jvm/java-21-openjdk-amd64/include/linux
+-I"C:\Program Files\Java\jdk-22\include\"
+-I"C:\Program Files\Java\jdk-22\include\win32"
