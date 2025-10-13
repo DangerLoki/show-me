@@ -3,7 +3,7 @@
 	"id": "show-me",
 	"version": "${version}",
 	"name": "Show Me",
-	"description": "Mostra no HUD apenas as informações que você quiser (coords, ping, FPS, etc.) sem precisar do F3.",
+	"description": "Shows only the information you want on the HUD (coords, ping, FPS, etc.) without needing F3.",
 	"authors": [
 		"Danger_Loki, RaijinBr"
 	],
@@ -27,8 +27,8 @@
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.16.0",
-		"minecraft": "~1.21.9",
+		"fabricloader": ">=0.17.0",
+		"minecraft": ">=1.21.9 <=1.21.10",
 		"java": ">=21",
 		"fabric-api": "*"
 	},

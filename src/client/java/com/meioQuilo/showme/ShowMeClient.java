@@ -72,18 +72,7 @@ public class ShowMeClient implements ClientModInitializer {
         });
 
         HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
-            /*
-            if (!nativeLoaded) {
-                try {
-                    ShowMeNativeLoader.loadNative();
-                    nativeLoaded = true;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            */
             renderHud(drawContext);
-
         });
     }
 
@@ -187,12 +176,6 @@ public class ShowMeClient implements ClientModInitializer {
         //debugLines.add(String.format("Chat Scale: %f", chatScale));
         int chatHeight = (int) ((chatLines * font.fontHeight) * chatScale);
         //debugLines.add(String.format("Calculated ChatHeight: %d", chatHeight));
-
-        //if (CONFIG.gpuName == null) {
-        //    CONFIG.gpuName = GpuMonitor.getName();
-        //}
-
-        //debugLines.add(CONFIG.gpuName);
 
         //if (CONFIG.showDebug) {
         //    lines.addAll(debugLines);

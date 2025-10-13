@@ -43,7 +43,6 @@ public class ShowMeConfig {
     public boolean showMemory = false;
     public boolean showClock = false;
     public boolean showSeed = false;
-    public String gpuName;
 
     public static ShowMeConfig load() {
         if (Files.exists(CONFIG_PATH)) {

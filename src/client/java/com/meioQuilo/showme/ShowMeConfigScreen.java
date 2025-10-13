@@ -5,8 +5,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
+
+import com.meioQuilo.showme.ui.input.MouseInputHandler;
+import com.meioQuilo.showme.ui.input.HudDragHandler;
+import com.meioQuilo.showme.ui.layout.HudBounds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +52,9 @@ public class ShowMeConfigScreen extends Screen {
     private int dragOffsetX = 0;
     private int dragOffsetY = 0;
 
+    private MouseInputHandler mouseHandler = new MouseInputHandler();
+    private HudDragHandler hudDragHandler = new HudDragHandler();
+
     public ShowMeConfigScreen(Screen parent) {
         super(Text.literal("Show Me - Config"));
         this.parent = parent;
@@ -84,13 +92,13 @@ public class ShowMeConfigScreen extends Screen {
         system.addOption("key.option.showFps", () -> cfg.showFps, v -> cfg.showFps = v);
         system.addOption("key.option.showMemory", () -> cfg.showMemory, v -> cfg.showMemory = v);
 
-        Section debug = new Section("key.category.diagnosis");
-        debug.addOption("key.option.showDebug", () -> cfg.showDebug, v -> cfg.showDebug = v);
+        // Section debug = new Section("key.category.diagnosis");
+        // debug.addOption("key.option.showDebug", () -> cfg.showDebug, v -> cfg.showDebug = v);
 
         sections.add(world);
         sections.add(net);
         sections.add(system);
-        sections.add(debug);
+        // sections.add(debug);
     }
 
     private void rebuildWidgets() {
@@ -334,14 +342,11 @@ public class ShowMeConfigScreen extends Screen {
             }
         }
 
-        // N\u00e3o consumimos o evento, mas por enquanto retornamos false
-        // O sistema do Screen processar\u00e1 automaticamente os widgets
         return false;
     }
 
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         // NOTA: Este método não é chamado no Minecraft 1.21.9 devido a mudanças na API.
-        // A detecção de drag foi movida para o método render() usando GLFW diretamente.
         
         // Arraste da barra de rolagem (mantido para compatibilidade)
         if (draggingScrollbar) {
@@ -414,46 +419,18 @@ public class ShowMeConfigScreen extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        // SOLUÇÃO PARA MINECRAFT 1.21.9:
-        // Os métodos mouseClicked() e mouseDragged() não são mais chamados devido a mudanças na API.
-        // Detectamos o estado do botão do mouse diretamente via GLFW durante o render.
-        if (moveHudMode && this.client != null && this.client.getWindow() != null) {
-            long window = this.client.getWindow().getHandle();
-            boolean leftButtonPressed = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
-            
+        // Atualiza input handler
+        mouseHandler.update(mouseX, mouseY);
+        
+        // Processa drag do HUD se estiver no modo de mover
+        if (moveHudMode) {
             PreviewSize size = computePreviewSize();
-            int availW = Math.max(0, this.width - size.maxWidth);
-            int availH = Math.max(0, this.height - size.totalHeight);
-            
-            int hudX = Math.round(draft.hudPosXPct * availW);
-            int hudY = Math.round(draft.hudPosYPct * availH);
-            
-            // Verifica se mouse está sobre o HUD
-            boolean mouseOverHud = mouseX >= hudX && mouseX <= hudX + size.maxWidth &&
-                                  mouseY >= hudY && mouseY <= hudY + size.totalHeight;
-            
-            if (leftButtonPressed && mouseOverHud && !draggingHud) {
-                // Inicia arrasto
-                draggingHud = true;
-                dragOffsetX = mouseX - hudX;
-                dragOffsetY = mouseY - hudY;
-            } else if (!leftButtonPressed && draggingHud) {
-                // Termina arrasto
-                draggingHud = false;
-            } else if (draggingHud && leftButtonPressed) {
-                // Atualiza posição durante arrasto
-                int newX = mouseX - dragOffsetX;
-                int newY = mouseY - dragOffsetY;
-                newX = Math.max(0, Math.min(newX, availW));
-                newY = Math.max(0, Math.min(newY, availH));
-                draft.hudPosXPct = availW == 0 ? 0f : (float)newX / (float)availW;
-                draft.hudPosYPct = availH == 0 ? 0f : (float)newY / (float)availH;
-            }
+            HudBounds bounds = new HudBounds(this.width, this.height, size, draft);
+            hudDragHandler.handleInput(mouseHandler, bounds, draft);
         }
         
-        // Sem blur/fundo sólido para evitar crash
+        // Render normal da tela
         ctx.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 6, 0xFFFFFF);
-
         super.render(ctx, mouseX, mouseY, delta);
 
         // Prévia e guia de arrasto do HUD
@@ -536,10 +513,10 @@ public class ShowMeConfigScreen extends Screen {
         if (draft.showPing) lines.add("Ping: 42 ms");
         if (draft.showMemory) lines.add("Memória: 512/8192 MB");
         if (draft.showSeed) lines.add("Seed: 123456789");
-        if (draft.showDebug) {
-            lines.add("Window Width: 1920");
-            lines.add("Window Height: 1080");
-        }
+        // if (draft.showDebug) {
+        //     lines.add("Window Width: 1920");
+        //     lines.add("Window Height: 1080");
+        // }
         if (lines.isEmpty()) lines.add("HUD");
 
         int maxW = 0;
@@ -570,14 +547,16 @@ public class ShowMeConfigScreen extends Screen {
     }
 
     private record Option(String label, Supplier<Boolean> get, Consumer<Boolean> set) {}
-    private record PreviewSize(int maxWidth, int totalHeight) {}
+    
+    // Tornar estas classes públicas para que possam ser acessadas por outras classes
+    public record PreviewSize(int maxWidth, int totalHeight) {}
 
-    private static class WorkingConfig {
-        boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory, showDebug;
-        boolean useCustomHudPos;           // <— novo
-        float hudPosXPct, hudPosYPct;
+    public static class WorkingConfig {
+        public boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory;
+        public boolean useCustomHudPos;           // <— novo
+        public float hudPosXPct, hudPosYPct;
 
-        WorkingConfig(ShowMeConfig src) {
+        public WorkingConfig(ShowMeConfig src) {
             showFps = src.showFps;
             showCoords = src.showCoords;
             showClock = src.showClock;
@@ -587,13 +566,14 @@ public class ShowMeConfigScreen extends Screen {
             showSeed = src.showSeed;
             showPing = src.showPing;
             showMemory = src.showMemory;
-            showDebug = src.showDebug;
+            // showDebug = src.showDebug;
 
             useCustomHudPos = src.useCustomHudPos;   // <— novo
             hudPosXPct = src.hudPosXPct;
             hudPosYPct = src.hudPosYPct;
         }
-        void applyTo(ShowMeConfig dst) {
+        
+        public void applyTo(ShowMeConfig dst) {
             dst.showFps = showFps;
             dst.showCoords = showCoords;
             dst.showClock = showClock;
@@ -603,7 +583,7 @@ public class ShowMeConfigScreen extends Screen {
             dst.showSeed = showSeed;
             dst.showPing = showPing;
             dst.showMemory = showMemory;
-            dst.showDebug = showDebug;
+            // dst.showDebug = showDebug;
 
             dst.useCustomHudPos = useCustomHudPos;   // <— novo
             dst.hudPosXPct = hudPosXPct;
@@ -626,7 +606,7 @@ public class ShowMeConfigScreen extends Screen {
         int marginH = Math.max(10, (int) (this.width * pct));
 
         contentLeft = marginH;
-        contentTop = marginTop + TOP_BAR_H; // deixa espaço para a top bar
+        contentTop = marginTop + TOP_BAR_H; 
         contentWidth = this.width - marginH * 2;
         contentBottom = this.height - marginTop - 24;
     }
