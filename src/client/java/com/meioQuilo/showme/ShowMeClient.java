@@ -1,8 +1,8 @@
 // ShowMeClient.java
 package com.meioQuilo.showme;
 
-import com.meioQuilo.showme.slime.SlimeCalculator;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -15,6 +15,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 
 import org.lwjgl.glfw.GLFW;
+
+import com.meioQuilo.showme.commands.ShowMeCommands;
+import com.meioQuilo.showme.components.SlimeCalculator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +77,11 @@ public class ShowMeClient implements ClientModInitializer {
 
         HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
             renderHud(drawContext);
+        });
+
+        // Registrar comandos
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            ShowMeCommands.register(dispatcher);
         });
     }
 
@@ -157,24 +165,42 @@ public class ShowMeClient implements ClientModInitializer {
             lines.add(Text.translatable("key.hud.seed", seedText).getString());
         }
 
-        // exibir informações de slime chunk
-        if (CONFIG.showSlimeInfo && mc.player != null) {
-            BlockPos pos = mc.player.getBlockPos();
-            int chunkX = Math.floorDiv(pos.getX(), 16);
-            int chunkZ = Math.floorDiv(pos.getZ(), 16);
-            
-            String slimeText;
-            if (mc.getServer() != null) { // singleplayer (integrated server)
+        if (CONFIG.showSlime) {
+            String slimeText = "???";
+            if (mc.getServer() != null) {
                 long seed = mc.getServer().getOverworld().getSeed();
-                boolean isSlimeChunk = SlimeCalculator.isSlimeChunk(seed, chunkX, chunkZ);
-                slimeText = isSlimeChunk ? 
-                    Text.translatable("key.hud.slime.chunk").getString() : 
-                    Text.translatable("key.hud.slime.not_chunk").getString();
-            } else {
-                // Em multiplayer, não temos acesso à seed
-                slimeText = Text.translatable("key.hud.slime.unknown").getString();
+                BlockPos pos = mc.player.getBlockPos();
+                boolean isSlimeChunk = SlimeCalculator.isSlimeChunkFromBlock(seed, pos.getX(), pos.getZ());
+                
+                // Verificar se está no bioma pantano onde slimes spawnam
+                var biome = mc.world.getBiome(pos).getKey();
+                boolean isSwampBiome = biome.map(key -> {
+                    String biomePath = key.getValue().getPath();
+                    // Apenas swamp normal e mangrove_swamp permitem slimes
+                    return biomePath.equals("swamp") || biomePath.equals("mangrove_swamp");
+                }).orElse(false);
+                
+                if (isSwampBiome) {
+                    // Regras do pantano: Y=51-69
+                    if (pos.getY() >= 51 && pos.getY() <= 69) {
+                        slimeText = Text.translatable("key.hud.slime.swamp").getString();
+                    } else if (pos.getY() < 51) {
+                        slimeText = Text.translatable("key.hud.slime.swamp.too.low").getString();
+                    } else { // pos.getY() > 69
+                        slimeText = Text.translatable("key.hud.slime.swamp.too.high").getString();
+                    }
+                } else if (isSlimeChunk) {
+                    // Regras normais de chunk de slime: Y<40
+                    if (pos.getY() < 40) {
+                        slimeText = Text.translatable("key.hud.slime.yes").getString();
+                    } else {
+                        slimeText = Text.translatable("key.hud.slime.alert").getString();
+                    }
+                } else {
+                    slimeText = Text.translatable("key.hud.slime.no").getString();
+                }
             }
-            lines.add(slimeText);
+            lines.add(Text.translatable("key.hud.slime", slimeText).getString());
         }
 
         if (lines.isEmpty())

@@ -84,7 +84,7 @@ public class ShowMeConfigScreen extends Screen {
         world.addOption("key.option.showClock", () -> cfg.showClock, v -> cfg.showClock = v);
         world.addOption("key.option.showCoords", () -> cfg.showCoords, v -> cfg.showCoords = v);
         world.addOption("key.option.showSeed", () -> cfg.showSeed, v -> cfg.showSeed = v);
-        world.addOption("key.option.showSlimeInfo", () -> cfg.showSlimeInfo, v -> cfg.showSlimeInfo = v);
+        world.addOption("key.option.showSlime", () -> cfg.showSlime, v -> cfg.showSlime = v);
 
         Section net = new Section("key.category.multiplayer");
         net.addOption("key.option.showPing", () -> cfg.showPing, v -> cfg.showPing = v);
@@ -510,10 +510,8 @@ public class ShowMeConfigScreen extends Screen {
         if (draft.showPing) lines.add("Ping: 42 ms");
         if (draft.showMemory) lines.add("Memória: 512/8192 MB");
         if (draft.showSeed) lines.add("Seed: 123456789");
-        // if (draft.showDebug) {
-        //     lines.add("Window Width: 1920");
-        //     lines.add("Window Height: 1080");
-        // }
+        if (draft.showSlime) lines.add("Slime Chunk: Sim");
+
         if (lines.isEmpty()) lines.add("HUD");
 
         int maxW = 0;
@@ -549,7 +547,7 @@ public class ShowMeConfigScreen extends Screen {
     public record PreviewSize(int maxWidth, int totalHeight) {}
 
     public static class WorkingConfig {
-        public boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showPing, showMemory, showSlimeInfo;
+        public boolean showFps, showCoords, showClock, showDays, showBrightness, showBiome, showSeed, showSlime, showPing, showMemory;
         public boolean useCustomHudPos;           // <— novo
         public float hudPosXPct, hudPosYPct;
 
@@ -563,8 +561,7 @@ public class ShowMeConfigScreen extends Screen {
             showSeed = src.showSeed;
             showPing = src.showPing;
             showMemory = src.showMemory;
-            showSlimeInfo = src.showSlimeInfo;
-            // showDebug = src.showDebug;
+            showSlime = src.showSlime;
 
             useCustomHudPos = src.useCustomHudPos;   // <— novo
             hudPosXPct = src.hudPosXPct;
@@ -581,8 +578,7 @@ public class ShowMeConfigScreen extends Screen {
             dst.showSeed = showSeed;
             dst.showPing = showPing;
             dst.showMemory = showMemory;
-            dst.showSlimeInfo = showSlimeInfo;
-            // dst.showDebug = showDebug;
+            dst.showSlime = showSlime;
 
             dst.useCustomHudPos = useCustomHudPos;   // <— novo
             dst.hudPosXPct = hudPosXPct;

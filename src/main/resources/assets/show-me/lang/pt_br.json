@@ -23,7 +23,7 @@
 	"key.option.showPing": "Ping",
 	"key.option.showMemory": "Memória",
 	"key.option.showSeed": "Seed",
-	"key.option.showSlimeInfo": "Chunk Slime Info",
+	"key.option.showSlime": "Slime Chunk",
 
 	"key.hud.visible" : "Visível",
 	"key.hud.hidden" : "Oculto",
@@ -33,11 +33,15 @@
 	"key.hud.time": "Hora: %s",
 	"key.hud.biome" : "Bioma: %s",
 	"key.hud.ping": "Ping: %d ms",
-  	"key.hud.memory": "Mem: %d/%d MB (%d%%)",
+	"key.hud.memory": "Mem: %d/%d MB (%d%%)",
 	"key.hud.seed": "Seed: %s",
-	"key.hud.slime.chunk": "§aSlime Chunk: Sim",
-	"key.hud.slime.not_chunk": "§cSlime Chunk: Não",
-	"key.hud.slime.unknown": "Slime: ?",
+	"key.hud.slime": "Slime Chunk: %s",
+	"key.hud.slime.yes": "§aSim",
+	"key.hud.slime.no": "§cNão",
+	"key.hud.slime.alert": "§eChunk de Slime baixo de Y: 40",
+	"key.hud.slime.swamp": "§aPântano, Sim",
+	"key.hud.slime.swamp.too.low": "§ePântano, Suba para Y: 51",
+	"key.hud.slime.swamp.too.high": "§ePântano, Desça para Y: 69",
 	
 	"gui.showme.title": "Configurações Show Me"
 }

@@ -23,7 +23,6 @@
   "key.option.showPing": "Ping",
   "key.option.showMemory": "Memoria",
   "key.option.showSeed": "Semilla",
-  "key.option.showSlimeInfo": "Info Chunk Slime",
 
   "key.hud.visible": "Visible",
   "key.hud.hidden": "Oculto",
@@ -35,9 +34,6 @@
   "key.hud.ping": "Ping: %d ms",
   "key.hud.memory": "Mem: %d/%d MB (%d%%)",
   "key.hud.seed": "Semilla: %s",
-  "key.hud.slime.chunk": "§aChunk Slime: Sí",
-  "key.hud.slime.not_chunk": "§cChunk Slime: No",
-  "key.hud.slime.unknown": "Slime: ?",
 
   "gui.showme.title": "Configuración Show Me",
   "gui.showme.world": "Mundo",

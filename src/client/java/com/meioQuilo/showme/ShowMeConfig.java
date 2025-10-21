@@ -20,7 +20,6 @@ public class ShowMeConfig {
 
     // Enum de posição agora com CUSTOM
     public enum TogglePosition {
-        // ...existing code...
         TOP_LEFT,
         TOP_RIGHT,
         BOTTOM_LEFT,
@@ -43,7 +42,7 @@ public class ShowMeConfig {
     public boolean showMemory = false;
     public boolean showClock = false;
     public boolean showSeed = false;
-    public boolean showSlimeInfo = false;
+    public boolean showSlime = false;
 
     public static ShowMeConfig load() {
         if (Files.exists(CONFIG_PATH)) {
